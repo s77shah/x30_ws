@@ -1,0 +1,24 @@
+<launch>
+<arg name="world_name" default="$(find toto_config)/worlds/outdoor.world" />
+<arg name="paused" default="false"/>
+<arg name="use_sim_time" default="true"/>
+<arg name="gui" default="true"/>
+ 
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+<arg name="world_name" value="$(arg world_name)" />
+<arg name="paused" value="$(arg paused)"/>
+<arg name="use_sim_time" value="$(arg use_sim_time)"/>
+<arg name="gui" value="$(arg gui)"/>
+</include>
+ 
+    <param name="robot_description" textfile="/home/toto/x30_ws/src/URDF_model/x30_urdf/X30/urdf/X30.urdf" />
+<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model toto" />
+ 
+    <rosparam file="$(find toto_config)/config/ros_control/ros_control.yaml" command="load"/>
+<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+          output="screen" args="joint_state_controller joint_group_position_controller" />
+<include file="$(find champ_bringup)/launch/bringup.launch">
+<arg name="gazebo" value="true"/>
+</include>
+ 
+</launch>

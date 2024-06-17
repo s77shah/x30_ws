@@ -1,0 +1,31 @@
+<sdf version="1.6">
+  <world name="mount_helens_after">
+    <model name="mount_helens_after">
+      <static>true</static>
+      <link name="terrain">
+        <collision>
+          <geometry>
+            <heightmap>
+              <uri>file://$(find x30_urdf)/worlds/mtsthelens_after.dem</uri>
+              <size>2000 2000 500</size>
+              <pos>0 0 0</pos>
+            </heightmap>
+          </geometry>
+        </collision>
+        <visual>
+          <geometry>
+            <heightmap>
+              <uri>file://$(find x30_urdf)/worlds/mtsthelens_after.dem</uri>
+              <size>2000 2000 500</size>
+              <pos>0 0 0</pos>
+            </heightmap>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+  </world>
+</sdf>
+

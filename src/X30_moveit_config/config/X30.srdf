@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This does not replace URDF, and is not an extension of URDF.
+    This is a format for representing semantic information about the robot structure.
+    A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
+-->
+<robot name="X30">
+    <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
+    <!--LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included-->
+    <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
+    <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
+    <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
+    <group name="fl_leg">
+        <chain base_link="TORSO" tip_link="FL_FOOT"/>
+    </group>
+    <group name="fr_leg">
+        <chain base_link="TORSO" tip_link="FR_FOOT"/>
+    </group>
+    <group name="hl_leg">
+        <chain base_link="TORSO" tip_link="HL_FOOT"/>
+    </group>
+    <group name="hr_leg">
+        <chain base_link="TORSO" tip_link="HR_FOOT"/>
+    </group>
+    <group name="whole_body">
+        <group name="fl_leg"/>
+        <group name="fr_leg"/>
+        <group name="hl_leg"/>
+        <group name="hr_leg"/>
+    </group>
+    <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
+    <group_state name="sitting" group="whole_body">
+        <joint name="FL_HipX_joint" value="-0.304755"/>
+        <joint name="FL_HipY_joint" value="-1.49129"/>
+        <joint name="FL_Knee_joint" value="2.757"/>
+        <joint name="FR_HipX_joint" value="0.3317"/>
+        <joint name="FR_HipY_joint" value="-1.4892"/>
+        <joint name="FR_Knee_joint" value="2.7532"/>
+        <joint name="HL_HipX_joint" value="-0.2963"/>
+        <joint name="HL_HipY_joint" value="-1.4862"/>
+        <joint name="HL_Knee_joint" value="2.7532"/>
+        <joint name="HR_HipX_joint" value="0.3016"/>
+        <joint name="HR_HipY_joint" value="-1.5027"/>
+        <joint name="HR_Knee_joint" value="2.7605"/>
+    </group_state>
+    <group_state name="low standing" group="whole_body">
+        <joint name="FL_HipX_joint" value="0.035"/>
+        <joint name="FL_HipY_joint" value="-0.989"/>
+        <joint name="FL_Knee_joint" value="1.935"/>
+        <joint name="FR_HipX_joint" value="-0.0396"/>
+        <joint name="FR_HipY_joint" value="-0.9709"/>
+        <joint name="FR_Knee_joint" value="1.9448"/>
+        <joint name="HL_HipX_joint" value="-0.0045"/>
+        <joint name="HL_HipY_joint" value="-0.9572"/>
+        <joint name="HL_Knee_joint" value="1.931"/>
+        <joint name="HR_HipX_joint" value="-0.021"/>
+        <joint name="HR_HipY_joint" value="-0.9966"/>
+        <joint name="HR_Knee_joint" value="1.941"/>
+    </group_state>
+    <group_state name="standing" group="whole_body">
+        <joint name="FL_HipX_joint" value="-0.0568"/>
+        <joint name="FL_HipY_joint" value="-0.6058"/>
+        <joint name="FL_Knee_joint" value="1.21"/>
+        <joint name="FR_HipX_joint" value="0.0598"/>
+        <joint name="FR_HipY_joint" value="-0.6072"/>
+        <joint name="FR_Knee_joint" value="1.2157"/>
+        <joint name="HL_HipX_joint" value="-0.0646"/>
+        <joint name="HL_HipY_joint" value="-0.6048"/>
+        <joint name="HL_Knee_joint" value="1.2187"/>
+        <joint name="HR_HipX_joint" value="0.059"/>
+        <joint name="HR_HipY_joint" value="-0.6046"/>
+        <joint name="HR_Knee_joint" value="1.2111"/>
+    </group_state>
+    <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+    <end_effector name="fl_foot_effector" parent_link="FL_FOOT" group="fl_leg"/>
+    <end_effector name="fr_foot_effector" parent_link="FR_FOOT" group="fr_leg"/>
+    <end_effector name="hl_foot_effector" parent_link="HL_FOOT" group="hl_leg"/>
+    <end_effector name="hr_foot_effector" parent_link="HR_FOOT" group="hr_leg"/>
+    <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
+    <virtual_joint name="virtual_joint" type="floating" parent_frame="world" child_link="base_link"/>
+    <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <disable_collisions link1="FL_FOOT" link2="FL_SHANK" reason="Adjacent"/>
+    <disable_collisions link1="FL_FOOT" link2="FL_THIGH" reason="Never"/>
+    <disable_collisions link1="FL_FOOT" link2="FR_THIGH" reason="Never"/>
+    <disable_collisions link1="FL_FOOT" link2="HR_THIGH" reason="Never"/>
+    <disable_collisions link1="FL_FOOT" link2="TORSO" reason="Never"/>
+    <disable_collisions link1="FL_SHANK" link2="FL_THIGH" reason="Adjacent"/>
+    <disable_collisions link1="FL_SHANK" link2="FR_THIGH" reason="Never"/>
+    <disable_collisions link1="FL_SHANK" link2="HR_THIGH" reason="Never"/>
+    <disable_collisions link1="FL_SHANK" link2="TORSO" reason="Never"/>
+    <disable_collisions link1="FL_THIGH" link2="FR_FOOT" reason="Never"/>
+    <disable_collisions link1="FL_THIGH" link2="FR_SHANK" reason="Never"/>
+    <disable_collisions link1="FL_THIGH" link2="FR_THIGH" reason="Never"/>
+    <disable_collisions link1="FL_THIGH" link2="HL_SHANK" reason="Never"/>
+    <disable_collisions link1="FL_THIGH" link2="HL_THIGH" reason="Never"/>
+    <disable_collisions link1="FL_THIGH" link2="HR_FOOT" reason="Never"/>
+    <disable_collisions link1="FL_THIGH" link2="HR_SHANK" reason="Never"/>
+    <disable_collisions link1="FL_THIGH" link2="HR_THIGH" reason="Never"/>
+    <disable_collisions link1="FL_THIGH" link2="TORSO" reason="Adjacent"/>
+    <disable_collisions link1="FR_FOOT" link2="FR_SHANK" reason="Adjacent"/>
+    <disable_collisions link1="FR_FOOT" link2="FR_THIGH" reason="Never"/>
+    <disable_collisions link1="FR_FOOT" link2="HL_THIGH" reason="Never"/>
+    <disable_collisions link1="FR_FOOT" link2="TORSO" reason="Never"/>
+    <disable_collisions link1="FR_SHANK" link2="FR_THIGH" reason="Adjacent"/>
+    <disable_collisions link1="FR_SHANK" link2="HL_THIGH" reason="Never"/>
+    <disable_collisions link1="FR_SHANK" link2="TORSO" reason="Never"/>
+    <disable_collisions link1="FR_THIGH" link2="HL_FOOT" reason="Never"/>
+    <disable_collisions link1="FR_THIGH" link2="HL_SHANK" reason="Never"/>
+    <disable_collisions link1="FR_THIGH" link2="HL_THIGH" reason="Never"/>
+    <disable_collisions link1="FR_THIGH" link2="HR_SHANK" reason="Never"/>
+    <disable_collisions link1="FR_THIGH" link2="HR_THIGH" reason="Never"/>
+    <disable_collisions link1="FR_THIGH" link2="TORSO" reason="Adjacent"/>
+    <disable_collisions link1="HL_FOOT" link2="HL_SHANK" reason="Adjacent"/>
+    <disable_collisions link1="HL_FOOT" link2="HL_THIGH" reason="Never"/>
+    <disable_collisions link1="HL_FOOT" link2="HR_THIGH" reason="Never"/>
+    <disable_collisions link1="HL_FOOT" link2="TORSO" reason="Never"/>
+    <disable_collisions link1="HL_SHANK" link2="HL_THIGH" reason="Adjacent"/>
+    <disable_collisions link1="HL_SHANK" link2="HR_THIGH" reason="Never"/>
+    <disable_collisions link1="HL_SHANK" link2="TORSO" reason="Never"/>
+    <disable_collisions link1="HL_THIGH" link2="HR_FOOT" reason="Never"/>
+    <disable_collisions link1="HL_THIGH" link2="HR_SHANK" reason="Never"/>
+    <disable_collisions link1="HL_THIGH" link2="HR_THIGH" reason="Never"/>
+    <disable_collisions link1="HL_THIGH" link2="TORSO" reason="Adjacent"/>
+    <disable_collisions link1="HR_FOOT" link2="HR_SHANK" reason="Adjacent"/>
+    <disable_collisions link1="HR_FOOT" link2="HR_THIGH" reason="Never"/>
+    <disable_collisions link1="HR_FOOT" link2="TORSO" reason="Never"/>
+    <disable_collisions link1="HR_SHANK" link2="HR_THIGH" reason="Adjacent"/>
+    <disable_collisions link1="HR_SHANK" link2="TORSO" reason="Never"/>
+    <disable_collisions link1="HR_THIGH" link2="TORSO" reason="Adjacent"/>
+</robot>

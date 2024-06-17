@@ -1,0 +1,24 @@
+base: base_link
+left_front:
+  - FL_HIP
+  - FL_THIGH
+  - FL_SHANK
+  - FL_FOOT
+
+right_front:
+  - FR_HIP
+  - FR_THIGH
+  - FR_SHANK
+  - FR_FOOT
+
+left_hind:
+  - HL_HIP
+  - HL_THIGH
+  - HL_SHANK
+  - HL_FOOT
+
+right_hind:
+  - HR_HIP
+  - HR_THIGH
+  - HR_SHANK
+  - HR_FOOT

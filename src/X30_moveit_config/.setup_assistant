@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: ""
+    relative_path: /home/toto/x30_ws/src/URDF_model/x30_urdf/X30/urdf/X30.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/X30.srdf
+  CONFIG:
+    author_name: Sania Shah
+    author_email: sshah582@uwo.ca
+    generated_timestamp: 1755028362

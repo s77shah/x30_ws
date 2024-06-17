@@ -1,0 +1,703 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<robot name="X30">
+    <link name="base_link">
+        <inertial>
+            <origin xyz="0.0 0.0 0.0" />
+            <mass value="0.1" />
+            <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4" />
+        </inertial>
+    </link>
+    <link name="base_laser">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.01" />
+            <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" />
+            <geometry>
+                <cylinder length="0.05" radius="0.03" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" />
+            <geometry>
+                <cylinder length="0.05" radius="0.03" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="base_to_laser" type="fixed">
+        <parent link="base_link" />
+        <child link="base_laser" />
+        <origin xyz="0.2 0 0.25" rpy="0 0 0" />
+    </joint>
+    <gazebo reference="base_laser">
+        <sensor type="ray" name="x30_laser">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>false</visualize>
+            <update_rate>20</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>720</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-1.5708</min_angle>
+                        <max_angle>1.5708</max_angle>
+                    </horizontal>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>12.0</max>
+                    <resolution>0.01</resolution>
+                </range>
+            </ray>
+            <plugin name="gazebo_ros_laser_x30" filename="libgazebo_ros_laser.so">
+                <robotNamespace>/x30</robotNamespace>
+                <topicName>/x30/scan</topicName>
+                <!-- Use the unprefixed link name; robot_state_publisher will add x30/ -->
+                <frameName>base_laser</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+    <joint name="base_to_torso" type="fixed">
+        <parent link="base_link" />
+        <child link="TORSO" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
+    <link name="TORSO">
+        <inertial>
+            <origin xyz="-0.0029257 7.5034e-06 0.020095" rpy="0 0 0" />
+            <mass value="30.7" />
+            <inertia ixx="0.364306" ixy="0.00018421" ixz="0.00027469" iyy="0.597627" iyz="0.00026784" izz="0.757267" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/torso.stl" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.44 0.26 0.15" />
+            </geometry>
+        </collision>
+    </link>
+    <link name="FL_HIP">
+        <inertial>
+            <origin xyz="-0.0018591 -0.011377 0.00027039" rpy="0 0 0" />
+            <mass value="1.43" />
+            <inertia ixx="0.0014068" ixy="-1.8545e-05" ixz="2.7664e-06" iyy="0.0026782" iyz="2.1221e-06" izz="0.0015918" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/hip.stl" />
+            </geometry>
+        </visual>
+    </link>
+    <joint name="FL_HipX_joint" type="revolute">
+        <origin xyz="0.291 0.08 0" rpy="0 0 0" />
+        <parent link="TORSO" />
+        <child link="FL_HIP" />
+        <axis xyz="-1 0 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="-0.323" upper="0.585" effort="84" velocity="17.5" />
+    </joint>
+    <link name="FL_THIGH">
+        <inertial>
+            <origin xyz="-0.0087581 -0.023554 -0.055162" rpy="0 0 0" />
+            <mass value="4.0809" />
+            <inertia ixx="0.012604" ixy="0.00020291" ixz="-0.00030875" iyy="0.0164" iyz="0.00036593" izz="0.0061084" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/l_thigh.stl" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.02 0 -0.13" />
+            <geometry>
+                <cylinder length="0.25" radius="0.04" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="FL_HipY_joint" type="revolute">
+        <origin xyz="0 0.11675 0" rpy="0 0 0" />
+        <parent link="FL_HIP" />
+        <child link="FL_THIGH" />
+        <axis xyz="0 -1 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="-2.967" upper="0.262" effort="84" velocity="17.5" />
+    </joint>
+    <link name="FL_SHANK">
+        <inertial>
+            <origin xyz="0.014851 2.0685e-05 -0.12283" rpy="0 0 0" />
+            <mass value="0.71386" />
+            <inertia ixx="0.0093039" ixy="1.7693e-07" ixz="0.00034843" iyy="0.0096272" iyz="-3.7717e-06" izz="0.00041542" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/shank.stl" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="0. -0.40 0." xyz="0.02 0 -0.046" />
+            <geometry>
+                <cylinder length="0.1" radius="0.025" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0. 0 0." xyz="0.045 0 -0.155" />
+            <geometry>
+                <cylinder length="0.12" radius="0.025" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0. 0.45 0." xyz="0.025 0 -0.246" />
+            <geometry>
+                <cylinder length="0.08" radius="0.022" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="FL_Knee_joint" type="revolute">
+        <origin xyz="0 0 -0.30" rpy="0 0 0" />
+        <parent link="FL_THIGH" />
+        <child link="FL_SHANK" />
+        <axis xyz="0 -1 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="0.349" upper="2.531" effort="180" velocity="16.1" />
+    </joint>
+
+    <link name="FL_FOOT">
+        <inertial>
+            <mass value="0.06" />
+            <inertia ixx="1.45e-5" ixy="0" ixz="0" iyy="3.4e-5" iyz="0" izz="4.45e-5" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </inertial>
+
+        <collision name="fl_footpad_collision">
+            <origin xyz= "0 0 -0.01" rpy="0 0 0"/>
+            <geometry>
+            <box size="0.08 0.05 0.02" />
+            </geometry>
+        </collision>
+
+        <visual name= "fl_foot_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="0.03" />
+            </geometry>
+        </visual>
+    </link>
+
+    <gazebo reference="FL_FOOT">
+        <mu1>3.0</mu1>
+        <mu2>3.0</mu2>
+        <kp>5e4</kp>
+        <kd>50</kd>
+        <maxVel>0.1</maxVel>
+        <minDepth>0.002</minDepth>
+    </gazebo>
+ 
+    <joint name="FL_Ankle" type="fixed" dont_collapse="true">
+        <origin xyz="0 0 -0.31" />
+        <parent link="FL_SHANK" />
+        <child link="FL_FOOT" />
+    </joint>
+    <link name="FR_HIP">
+        <inertial>
+            <origin xyz="-0.0018591 0.011377 -2.7675e-05" rpy="3.14159 0 0" />
+            <mass value="1.43" />
+            <inertia ixx="0.0014068" ixy="1.8545e-05" ixz="-4.1487e-06" iyy="0.0026782" iyz="7.0795e-06" izz="0.0015918" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/hip.stl" />
+            </geometry>
+        </visual>
+    </link>
+    <joint name="FR_HipX_joint" type="revolute">
+        <origin xyz="0.291 -0.08 0" rpy="0 0 0" />
+        <parent link="TORSO" />
+        <child link="FR_HIP" />
+        <axis xyz="-1 0 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="-0.585" upper="0.323" effort="84" velocity="17.5" />
+    </joint>
+    <link name="FR_THIGH">
+        <inertial>
+            <origin xyz="-0.0087433 0.023551 -0.055154" rpy="0 0 0" />
+            <mass value="4.0809" />
+            <inertia ixx="0.012604" ixy="-0.00020374" ixz="-0.0003086" iyy="0.0164" iyz="-0.00036585" izz="0.0061086" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/r_thigh.stl" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.02 0 -0.13" />
+            <geometry>
+                <cylinder length="0.25" radius="0.04" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="FR_HipY_joint" type="revolute">
+        <origin xyz="0 -0.11675 0" rpy="0 0 0" />
+        <parent link="FR_HIP" />
+        <child link="FR_THIGH" />
+        <axis xyz="0 -1 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="-2.967" upper="0.262" effort="84" velocity="17.5" />
+    </joint>
+    <link name="FR_SHANK">
+        <inertial>
+            <origin xyz="0.014851 2.0687e-05 -0.12283" rpy="0 0 0" />
+            <mass value="0.71386" />
+            <inertia ixx="0.0093039" ixy="1.7692e-07" ixz="0.00034843" iyy="0.0096272" iyz="-3.7714e-06" izz="0.00041542" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/shank.stl" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="0. -0.40 0." xyz="0.02 0 -0.046" />
+            <geometry>
+                <cylinder length="0.1" radius="0.025" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0. 0 0." xyz="0.045 0 -0.155" />
+            <geometry>
+                <cylinder length="0.12" radius="0.025" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0. 0.45 0." xyz="0.025 0 -0.246" />
+            <geometry>
+                <cylinder length="0.08" radius="0.022" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="FR_Knee_joint" type="revolute">
+        <origin xyz="0 0 -0.30" rpy="0 0 0" />
+        <parent link="FR_THIGH" />
+        <child link="FR_SHANK" />
+        <axis xyz="0 -1 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="0.349" upper="2.531" effort="180" velocity="16.1" />
+    </joint>
+    <link name="FR_FOOT">
+        <inertial>
+            <mass value="0.06" />
+            <inertia ixx="1.45e-5" ixy="0" ixz="0" iyy="3.4e-5" iyz="0" izz="4.45e-5" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </inertial>
+
+        <collision name="fr_footpad_collision">
+            <origin xyz= "0 0 -0.01" rpy="0 0 0"/>
+            <geometry>
+            <box size="0.08 0.05 0.02" />
+            </geometry>
+        </collision>
+
+        <visual name= "fr_foot_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="0.03" />
+            </geometry>
+        </visual>
+    </link>
+
+    <gazebo reference="fr_footpad_collision">
+        <mu1>3.0</mu1>
+        <mu2>3.0</mu2>
+        <kp>5e4</kp>
+        <kd>50</kd>
+        <maxVel>0.1</maxVel>
+        <minDepth>0.002</minDepth>
+    </gazebo>
+
+    <joint name="FR_Ankle" type="fixed" dont_collapse="true">
+        <origin xyz="0 0 -0.31" />
+        <parent link="FR_SHANK" />
+        <child link="FR_FOOT" />
+    </joint>
+    <link name="HL_HIP">
+        <inertial>
+            <origin xyz="0.0018591 -0.011377 -2.7675e-05" rpy="0 3.14159 0" />
+            <mass value="1.43" />
+            <inertia ixx="0.0014068" ixy="1.8545e-05" ixz="4.1487e-06" iyy="0.0026782" iyz="-7.0795e-06" izz="0.0015918" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/hip.stl" />
+            </geometry>
+        </visual>
+    </link>
+    <joint name="HL_HipX_joint" type="revolute">
+        <origin xyz="-0.291 0.08 0" rpy="0 0 0" />
+        <parent link="TORSO" />
+        <child link="HL_HIP" />
+        <axis xyz="-1 0 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="-0.323" upper="0.585" effort="84" velocity="17.5" />
+    </joint>
+    <link name="HL_THIGH">
+        <inertial>
+            <origin xyz="-0.0087581 -0.023554 -0.055162" rpy="0 0 0" />
+            <mass value="4.0809" />
+            <inertia ixx="0.012604" ixy="0.00020291" ixz="-0.00030875" iyy="0.0164" iyz="0.00036593" izz="0.0061084" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/l_thigh.stl" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.02 0 -0.13" />
+            <geometry>
+                <cylinder length="0.25" radius="0.04" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="HL_HipY_joint" type="revolute">
+        <origin xyz="0 0.11675 0" rpy="0 0 0" />
+        <parent link="HL_HIP" />
+        <child link="HL_THIGH" />
+        <axis xyz="0 -1 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="-2.967" upper="0.262" effort="84" velocity="17.5" />
+    </joint>
+    <link name="HL_SHANK">
+        <inertial>
+            <origin xyz="0.014851 2.0679e-05 -0.12283" rpy="0 0 0" />
+            <mass value="0.71386" />
+            <inertia ixx="0.0093039" ixy="1.7692e-07" ixz="0.00034843" iyy="0.0096272" iyz="-3.7714e-06" izz="0.00041542" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/shank.stl" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="0. -0.40 0." xyz="0.02 0 -0.046" />
+            <geometry>
+                <cylinder length="0.1" radius="0.025" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0. 0 0." xyz="0.045 0 -0.155" />
+            <geometry>
+                <cylinder length="0.12" radius="0.025" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0. 0.45 0." xyz="0.025 0 -0.246" />
+            <geometry>
+                <cylinder length="0.08" radius="0.022" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="HL_Knee_joint" type="revolute">
+        <origin xyz="0 0 -0.30" rpy="0 0 0" />
+        <parent link="HL_THIGH" />
+        <child link="HL_SHANK" />
+        <axis xyz="0 -1 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="0.349" upper="2.531" effort="180" velocity="16.1" />
+    </joint>
+    <link name="HL_FOOT">
+        <inertial>
+            <mass value="0.06" />
+            <inertia ixx="1.45e-5" ixy="0" ixz="0" iyy="3.4e-5" iyz="0" izz="4.45e-5" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </inertial>
+
+        <collision name="hl_footpad_collision">
+            <origin xyz= "0 0 -0.01" rpy="0 0 0"/>
+            <geometry>
+            <box size="0.08 0.05 0.02" />
+            </geometry>
+        </collision>
+
+        <visual name= "hl_foot_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="0.03" />
+            </geometry>
+        </visual>
+    </link>
+
+    <gazebo reference="HL_FOOT">
+        <mu1>3.0</mu1>
+        <mu2>3.0</mu2>
+        <kp>5e4</kp>
+        <kd>50</kd>
+        <maxVel>0.1</maxVel>
+        <minDepth>0.002</minDepth>
+    </gazebo>
+
+    <joint name="HL_Ankle" type="fixed" dont_collapse="true">
+        <origin xyz="0 0 -0.31" />
+        <parent link="HL_SHANK" />
+        <child link="HL_FOOT" />
+    </joint>
+    <link name="HR_HIP">
+        <inertial>
+            <origin xyz="0.0018591 0.011377 0.00027039" rpy="3.14159 3.14159 0" />
+            <mass value="1.43" />
+            <inertia ixx="0.0014068" ixy="-1.8545e-05" ixz="-2.7664e-06" iyy="0.0026782" iyz="-2.1221e-06" izz="0.0015918" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/hip.stl" />
+            </geometry>
+        </visual>
+    </link>
+    <joint name="HR_HipX_joint" type="revolute">
+        <origin xyz="-0.291 -0.08 0" rpy="0 0 0" />
+        <parent link="TORSO" />
+        <child link="HR_HIP" />
+        <axis xyz="-1 0 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="-0.585" upper="0.323" effort="84" velocity="17.5" />
+    </joint>
+    <link name="HR_THIGH">
+        <inertial>
+            <origin xyz="-0.0087433 0.023551 -0.055154" rpy="0 0 0" />
+            <mass value="4.0809" />
+            <inertia ixx="0.012604" ixy="-0.00020374" ixz="-0.0003086" iyy="0.0164" iyz="-0.00036585" izz="0.0061086" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/r_thigh.stl" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="-0.02 0 -0.13" />
+            <geometry>
+                <cylinder length="0.25" radius="0.04" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="HR_HipY_joint" type="revolute">
+        <origin xyz="0 -0.11675 0" rpy="0 0 0" />
+        <parent link="HR_HIP" />
+        <child link="HR_THIGH" />
+        <axis xyz="0 -1 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="-2.967" upper="0.262" effort="84" velocity="17.5" />
+    </joint>
+    <link name="HR_SHANK">
+        <inertial>
+            <origin xyz="0.014851 2.0679e-05 -0.12283" rpy="0 0 0" />
+            <mass value="0.71386" />
+            <inertia ixx="0.0093039" ixy="1.7692e-07" ixz="0.00034843" iyy="0.0096272" iyz="-3.7714e-06" izz="0.00041542" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://x30_urdf/X30/meshes/shank.stl" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="0. -0.40 0." xyz="0.02 0 -0.046" />
+            <geometry>
+                <cylinder length="0.1" radius="0.025" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0. 0 0." xyz="0.045 0 -0.155" />
+            <geometry>
+                <cylinder length="0.12" radius="0.025" />
+            </geometry>
+        </collision>
+        <collision>
+            <origin rpy="0. 0.45 0." xyz="0.025 0 -0.246" />
+            <geometry>
+                <cylinder length="0.08" radius="0.022" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="HR_Knee_joint" type="revolute">
+        <origin xyz="0 0 -0.30" rpy="0 0 0" />
+        <parent link="HR_THIGH" />
+        <child link="HR_SHANK" />
+        <axis xyz="0 -1 0" />
+        <dynamics damping="1" friction="0.03" />
+        <limit lower="0.349" upper="2.531" effort="180" velocity="16.1" />
+    </joint>
+    <link name="HR_FOOT">
+        <inertial>
+            <mass value="0.06" />
+            <inertia ixx="1.45e-5" ixy="0" ixz="0" iyy="3.4e-5" iyz="0" izz="4.45e-5" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </inertial>
+
+        <collision name="hr_footpad_collision">
+            <origin xyz= "0 0 -0.01" rpy="0 0 0"/>
+            <geometry>
+            <box size="0.08 0.05 0.02" />
+            </geometry>
+        </collision>
+
+        <visual name= "hr_foot_visual">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <sphere radius="0.03" />
+            </geometry>
+        </visual>
+    </link>
+    <gazebo reference="HR_FOOT">
+        <mu1>3.0</mu1>
+        <mu2>3.0</mu2>
+        <kp>5e4</kp>
+        <kd>50</kd>
+        <maxVel>0.1</maxVel>
+        <minDepth>0.002</minDepth>
+    </gazebo>
+    <joint name="HR_Ankle" type="fixed" dont_collapse="true">
+        <origin xyz="0 0 -0.31" />
+        <parent link="HR_SHANK" />
+        <child link="HR_FOOT" />
+    </joint>
+    <transmission name="trans_FL_HipX_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="FL_HipX_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="FL_HipX_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_FL_HipY_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="FL_HipY_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="FL_HipY_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_FL_Knee_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="FL_Knee_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="FL_Knee_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_FR_HipX_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="FR_HipX_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="FR_HipX_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_FR_HipY_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="FR_HipY_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="FR_HipY_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_FR_Knee_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="FR_Knee_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="FR_Knee_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_HL_HipX_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="HL_HipX_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="HL_HipX_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_HL_HipY_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="HL_HipY_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="HL_HipY_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_HL_Knee_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="HL_Knee_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="HL_Knee_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_HR_HipX_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="HR_HipX_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="HR_HipX_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_HR_HipY_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="HR_HipY_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="HR_HipY_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <transmission name="trans_HR_Knee_joint">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="HR_Knee_joint">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="HR_Knee_joint_motor">
+            <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <!-- Keep the ROS namespace aligned with the spawned model name (x30) so controller_manager is reachable at /x30/controller_manager. -->
+            <robotNamespace>/x30</robotNamespace>
+        </plugin>
+    </gazebo>
+</robot>

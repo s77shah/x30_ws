@@ -1,0 +1,13 @@
+# ROS
+build/
+devel/
+install/
+log/
+
+# OS / editor junk
+.DS_Store
+*.swp
+
+# Large data
+*.bag
+*.zip
