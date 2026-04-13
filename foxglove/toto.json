@@ -1,0 +1,212 @@
+{
+  "configById": {
+    "Plot!1": {
+      "paths": [
+        {
+          "value": "/x30/cmd_vel.linear.x",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "vx (m/s)"
+        },
+        {
+          "value": "/x30/cmd_vel.linear.y",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "vy (m/s)"
+        },
+        {
+          "value": "/x30/cmd_vel.angular.z",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "wz (rad/s)"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "title": "cmd_vel"
+    },
+    "Plot!2": {
+      "paths": [
+        {
+          "value": "/x30/odom.pose.pose.position.x",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "x (m)"
+        },
+        {
+          "value": "/x30/odom.pose.pose.position.y",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "y (m)"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "title": "XY Position"
+    },
+    "3D!1": {
+      "cameraState": {
+        "perspective": true,
+        "distance": 8,
+        "phi": 45,
+        "thetaOffset": 0,
+        "targetOffset": [0, 0, 0],
+        "target": [0, 0, 0],
+        "targetOrientation": [0, 0, 0, 1],
+        "fovy": 45,
+        "near": 0.001,
+        "far": 5000
+      },
+      "followTf": "x30/base_link",
+      "scene": {
+        "enableStats": false,
+        "backgroundColor": "#1a1a2e",
+        "labelScaleFactor": 1,
+        "ignoreColladaUpAxis": false,
+        "meshUpAxis": "Y_UP",
+        "transforms": {
+          "editable": false
+        },
+        "syncCamera": false
+      },
+      "transforms": {},
+      "topics": {
+        "/x30/scan": {
+          "visible": true,
+          "pointSize": 3,
+          "colorMode": "flat",
+          "flatColor": "#00ff88"
+        },
+        "/x30/lidar_front_up/points": {
+          "visible": true,
+          "pointSize": 2,
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "colorField": "z"
+        },
+        "/x30/lidar_front_down/points": {
+          "visible": true,
+          "pointSize": 2,
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "colorField": "z"
+        },
+        "/x30/lidar_rear_up/points": {
+          "visible": true,
+          "pointSize": 2,
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "colorField": "z"
+        },
+        "/x30/lidar_rear_down/points": {
+          "visible": true,
+          "pointSize": 2,
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "colorField": "z"
+        },
+        "/x30/map": {
+          "visible": true
+        },
+        "/x30/move_base/global_costmap/costmap": {
+          "visible": false
+        },
+        "/x30/move_base/local_costmap/costmap": {
+          "visible": true,
+          "colorMode": "costmap"
+        },
+        "/x30/move_base/NavfnROS/plan": {
+          "visible": true,
+          "lineWidth": 0.05,
+          "color": "#ff6b00"
+        }
+      },
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/x30/move_base_simple/goal",
+        "pointTopic": "/x30/clicked_point",
+        "poseEstimateTopic": "/x30/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26
+      }
+    },
+    "Image!1": {
+      "cameraTopic": "/x30/camera/image_raw",
+      "enabledMarkerTopics": [],
+      "synchronize": false,
+      "flipHorizontal": false,
+      "flipVertical": false,
+      "rotation": 0,
+      "minValue": 0,
+      "maxValue": 255
+    },
+    "StateTransitions!1": {
+      "paths": [
+        {
+          "value": "/x30/joint_states.position.0",
+          "timestampMethod": "receiveTime",
+          "label": "FL_HipX"
+        },
+        {
+          "value": "/x30/joint_states.position.1",
+          "timestampMethod": "receiveTime",
+          "label": "FL_HipY"
+        },
+        {
+          "value": "/x30/joint_states.position.2",
+          "timestampMethod": "receiveTime",
+          "label": "FL_Knee"
+        }
+      ],
+      "fontSize": 12,
+      "isSynced": true
+    },
+    "Tab!1": {
+      "activeTabIdx": 0,
+      "tabs": [
+        { "title": "3D View", "layout": null },
+        { "title": "Camera", "layout": null }
+      ]
+    }
+  },
+  "globalVariables": {},
+  "layout": {
+    "first": {
+      "first": "3D!1",
+      "second": {
+        "first": "Image!1",
+        "second": {
+          "first": "Plot!1",
+          "second": "Plot!2",
+          "direction": "column",
+          "splitPercentage": 50
+        },
+        "direction": "column",
+        "splitPercentage": 40
+      },
+      "direction": "row",
+      "splitPercentage": 60
+    },
+    "second": "StateTransitions!1",
+    "direction": "column",
+    "splitPercentage": 80
+  },
+  "playbackConfig": {
+    "speed": 1
+  },
+  "userNodes": {},
+  "linkedGlobalVariables": [],
+  "version": "1"
+}
