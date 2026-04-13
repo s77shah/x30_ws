@@ -7,32 +7,75 @@
             <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4" />
         </inertial>
     </link>
-    <link name="base_laser">
+    <!-- ================================================================
+         SENSORS: 4x Livox Mid-360 LiDARs + Wide-angle Camera
+         Layout matches real X30: front-up, front-down, rear-up, rear-down
+         Each 3D LiDAR: 360 deg horizontal, ~60 deg vertical FOV, 30m range
+         2D scan on front-up LiDAR for AMCL/move_base compatibility
+         Topics:
+           /x30/scan                   - 2D LaserScan  (nav stack / AMCL)
+           /x30/lidar_front_up/points  - PointCloud    (3D, rtabmap/explore)
+           /x30/lidar_front_down/points
+           /x30/lidar_rear_up/points
+           /x30/lidar_rear_down/points
+           /x30/camera/image_raw       - RGB image
+           /x30/camera/camera_info
+         ================================================================ -->
+
+    <!-- ── Front-upper LiDAR ── -->
+    <link name="lidar_front_up">
         <inertial>
             <origin xyz="0 0 0" />
-            <mass value="0.01" />
+            <mass value="0.07" />
             <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5" />
         </inertial>
         <visual>
             <origin xyz="0 0 0" />
-            <geometry>
-                <cylinder length="0.05" radius="0.03" />
-            </geometry>
+            <geometry><cylinder length="0.04" radius="0.025" /></geometry>
         </visual>
-        <collision>
-            <origin xyz="0 0 0" />
-            <geometry>
-                <cylinder length="0.05" radius="0.03" />
-            </geometry>
-        </collision>
     </link>
-    <joint name="base_to_laser" type="fixed">
+    <joint name="base_to_lidar_front_up" type="fixed">
         <parent link="base_link" />
-        <child link="base_laser" />
-        <origin xyz="0.2 0 0.25" rpy="0 0 0" />
+        <child link="lidar_front_up" />
+        <!-- Front face of body, tilted upward to cover above-horizon forward -->
+        <origin xyz="0.22 0 0.10" rpy="0 -0.3 0" />
     </joint>
-    <gazebo reference="base_laser">
-        <sensor type="ray" name="x30_laser">
+    <gazebo reference="lidar_front_up">
+        <!-- 3D block laser → PointCloud on /x30/lidar_front_up/points -->
+        <sensor type="ray" name="lidar_front_up_3d">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>false</visualize>
+            <update_rate>10</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>360</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
+                    </horizontal>
+                    <vertical>
+                        <samples>32</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-0.26180</min_angle>
+                        <max_angle>0.78540</max_angle>
+                    </vertical>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>30.0</max>
+                    <resolution>0.01</resolution>
+                </range>
+                <noise><type>gaussian</type><mean>0.0</mean><stddev>0.01</stddev></noise>
+            </ray>
+            <plugin name="gazebo_ros_lidar_front_up" filename="libgazebo_ros_block_laser.so">
+                <robotNamespace>/x30</robotNamespace>
+                <topicName>lidar_front_up/points</topicName>
+                <frameName>lidar_front_up</frameName>
+            </plugin>
+        </sensor>
+        <!-- 2D scan slice from this LiDAR for AMCL / move_base -->
+        <sensor type="ray" name="x30_scan_2d">
             <pose>0 0 0 0 0 0</pose>
             <visualize>false</visualize>
             <update_rate>20</update_rate>
@@ -41,21 +84,229 @@
                     <horizontal>
                         <samples>720</samples>
                         <resolution>1</resolution>
-                        <min_angle>-1.5708</min_angle>
-                        <max_angle>1.5708</max_angle>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
                     </horizontal>
                 </scan>
                 <range>
                     <min>0.1</min>
-                    <max>12.0</max>
+                    <max>30.0</max>
                     <resolution>0.01</resolution>
                 </range>
             </ray>
-            <plugin name="gazebo_ros_laser_x30" filename="libgazebo_ros_laser.so">
+            <plugin name="gazebo_ros_scan" filename="libgazebo_ros_laser.so">
                 <robotNamespace>/x30</robotNamespace>
                 <topicName>/x30/scan</topicName>
-                <!-- Use the unprefixed link name; robot_state_publisher will add x30/ -->
-                <frameName>base_laser</frameName>
+                <frameName>lidar_front_up</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+    <!-- ── Front-lower LiDAR ── -->
+    <link name="lidar_front_down">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.07" />
+            <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" />
+            <geometry><cylinder length="0.04" radius="0.025" /></geometry>
+        </visual>
+    </link>
+    <joint name="base_to_lidar_front_down" type="fixed">
+        <parent link="base_link" />
+        <child link="lidar_front_down" />
+        <!-- Front face, tilted downward for ground/obstacle coverage -->
+        <origin xyz="0.22 0 0.01" rpy="0 0.5 0" />
+    </joint>
+    <gazebo reference="lidar_front_down">
+        <sensor type="ray" name="lidar_front_down_3d">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>false</visualize>
+            <update_rate>10</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>360</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
+                    </horizontal>
+                    <vertical>
+                        <samples>32</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-0.78540</min_angle>
+                        <max_angle>0.26180</max_angle>
+                    </vertical>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>30.0</max>
+                    <resolution>0.01</resolution>
+                </range>
+                <noise><type>gaussian</type><mean>0.0</mean><stddev>0.01</stddev></noise>
+            </ray>
+            <plugin name="gazebo_ros_lidar_front_down" filename="libgazebo_ros_block_laser.so">
+                <robotNamespace>/x30</robotNamespace>
+                <topicName>lidar_front_down/points</topicName>
+                <frameName>lidar_front_down</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+    <!-- ── Rear-upper LiDAR ── -->
+    <link name="lidar_rear_up">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.07" />
+            <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" />
+            <geometry><cylinder length="0.04" radius="0.025" /></geometry>
+        </visual>
+    </link>
+    <joint name="base_to_lidar_rear_up" type="fixed">
+        <parent link="base_link" />
+        <child link="lidar_rear_up" />
+        <!-- Rear face, tilted upward -->
+        <origin xyz="-0.22 0 0.10" rpy="0 -0.3 3.14159" />
+    </joint>
+    <gazebo reference="lidar_rear_up">
+        <sensor type="ray" name="lidar_rear_up_3d">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>false</visualize>
+            <update_rate>10</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>360</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
+                    </horizontal>
+                    <vertical>
+                        <samples>32</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-0.26180</min_angle>
+                        <max_angle>0.78540</max_angle>
+                    </vertical>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>30.0</max>
+                    <resolution>0.01</resolution>
+                </range>
+                <noise><type>gaussian</type><mean>0.0</mean><stddev>0.01</stddev></noise>
+            </ray>
+            <plugin name="gazebo_ros_lidar_rear_up" filename="libgazebo_ros_block_laser.so">
+                <robotNamespace>/x30</robotNamespace>
+                <topicName>lidar_rear_up/points</topicName>
+                <frameName>lidar_rear_up</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+    <!-- ── Rear-lower LiDAR ── -->
+    <link name="lidar_rear_down">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.07" />
+            <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" />
+            <geometry><cylinder length="0.04" radius="0.025" /></geometry>
+        </visual>
+    </link>
+    <joint name="base_to_lidar_rear_down" type="fixed">
+        <parent link="base_link" />
+        <child link="lidar_rear_down" />
+        <!-- Rear face, tilted downward -->
+        <origin xyz="-0.22 0 0.01" rpy="0 0.5 3.14159" />
+    </joint>
+    <gazebo reference="lidar_rear_down">
+        <sensor type="ray" name="lidar_rear_down_3d">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>false</visualize>
+            <update_rate>10</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>360</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
+                    </horizontal>
+                    <vertical>
+                        <samples>32</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-0.78540</min_angle>
+                        <max_angle>0.26180</max_angle>
+                    </vertical>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>30.0</max>
+                    <resolution>0.01</resolution>
+                </range>
+                <noise><type>gaussian</type><mean>0.0</mean><stddev>0.01</stddev></noise>
+            </ray>
+            <plugin name="gazebo_ros_lidar_rear_down" filename="libgazebo_ros_block_laser.so">
+                <robotNamespace>/x30</robotNamespace>
+                <topicName>lidar_rear_down/points</topicName>
+                <frameName>lidar_rear_down</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+    <!-- ── Wide-angle Camera ── -->
+    <link name="camera_front">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="0.05" />
+            <inertia ixx="1e-5" ixy="0" ixz="0" iyy="1e-5" iyz="0" izz="1e-5" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" />
+            <geometry><box size="0.03 0.06 0.03" /></geometry>
+        </visual>
+    </link>
+    <joint name="base_to_camera_front" type="fixed">
+        <parent link="base_link" />
+        <child link="camera_front" />
+        <!-- Top-front of body, slight downward tilt -->
+        <origin xyz="0.22 0 0.13" rpy="0 0.15 0" />
+    </joint>
+    <gazebo reference="camera_front">
+        <sensor type="camera" name="camera_front_sensor">
+            <update_rate>30.0</update_rate>
+            <camera name="camera_front">
+                <horizontal_fov>1.5708</horizontal_fov>
+                <image>
+                    <width>640</width>
+                    <height>480</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.02</near>
+                    <far>50</far>
+                </clip>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.007</stddev>
+                </noise>
+            </camera>
+            <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+                <robotNamespace>/x30</robotNamespace>
+                <alwaysOn>true</alwaysOn>
+                <updateRate>30.0</updateRate>
+                <cameraName>camera</cameraName>
+                <imageTopicName>image_raw</imageTopicName>
+                <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+                <frameName>camera_front</frameName>
             </plugin>
         </sensor>
     </gazebo>
