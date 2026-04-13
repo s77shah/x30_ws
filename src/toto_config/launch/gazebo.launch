@@ -2,8 +2,8 @@
     <arg name="robot_name"         default="/"/> <!-- Change this for namespacing. -->
     <arg name="rviz"               default="false"/> <!-- Set to true to run rviz in parallel. -->
     <arg name="lite"               default="false" />  <!-- Set to true if you're using CHAMP lite version. Only useful for microcontrollers. -->
-    <arg name="ros_control_file"   default="$(find toto_v2_config)/config/ros_control/ros_control.yaml" /> <!-- Path to ROS Control configurations. Do not touch. -->
-    <arg name="gazebo_world"       default="$(find toto_v2_config)/worlds/outdoor.world" /> <!-- Path to Gazebo world you want to load. -->
+    <arg name="ros_control_file"   default="$(find toto_config)/config/ros_control/ros_control.yaml" /> <!-- Path to ROS Control configurations. Do not touch. -->
+    <arg name="gazebo_world"       default="$(find toto_config)/worlds/outdoor.world" /> <!-- Path to Gazebo world you want to load. -->
     <arg name="gui"                default="true"/>
     <arg name="paused"             default="true"/>  <!-- Start paused so controllers can hold pose before physics runs. -->
     <arg name="world_init_x"       default="0.0" /> <!-- X Initial position of the robot in Gazebo World -->
@@ -17,7 +17,7 @@
     <!-- Ensure namespaced robot_description exists for gazebo_ros_control when robot_name is set -->
     <param name="$(arg robot_name)/robot_description" textfile="$(find x30_urdf)/X30/urdf/X30.urdf" />
 
-    <include file="$(find toto_v2_config)/launch/bringup.launch">
+    <include file="$(find toto_config)/launch/bringup.launch">
         <arg name="robot_name"             value="$(arg robot_name)"/>
         <arg name="gazebo"                 value="true"/>
         <arg name="lite"                   value="$(arg lite)"/>
@@ -42,7 +42,7 @@
         <arg name="paused"             value="$(arg paused)" />
     </include>    
 
-    <node if="$(arg auto_stand)" pkg="toto_v2_config" type="auto_stand.py" name="auto_stand"
+    <node if="$(arg auto_stand)" pkg="toto_config" type="auto_stand.py" name="auto_stand"
           output="screen" ns="$(arg robot_name)">
         <param name="pose" value="$(arg stand_pose)" />
         <param name="robot_name" value="$(arg robot_name)" />

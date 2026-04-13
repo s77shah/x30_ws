@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>toto_v2_config</name>
+  <name>toto_config</name>
   <version>0.1.0</version>
   <description>toto_v2 Champ Config Package</description>
 
