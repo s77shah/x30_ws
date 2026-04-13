@@ -1,7 +1,7 @@
 {
-    "robot_name": "toto",
+    "robot_name": "toto_v2",
     "default_urdf": "False",
-    "urdf_path": "/home/toto/x30_ws/src/URDF_model/x30_urdf/X30/urdf/X30.urdf",
+    "urdf_path": "$(find x30_urdf)/X30/urdf/X30.urdf",
     "links": {
         "base": "base_link",
         "left_front": [
@@ -197,8 +197,8 @@
         "gait": {
             "knee_orientation": ">>",
             "odom_scaler": 1.0,
-            "max_linear_vel_x": 1.2,
-            "max_linear_vel_y": 0.75,
+            "max_linear_vel_x": 0.75,
+            "max_linear_vel_y": 0.15,
             "max_angular_vel_z": 0.45,
             "stance_duration": 0.25,
             "com_x_translation": 0.0,

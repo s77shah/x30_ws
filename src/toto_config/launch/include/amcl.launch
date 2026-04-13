@@ -2,6 +2,8 @@
     <arg name="frame_prefix" default=""/>
 
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
+        <!-- Use scan in the node namespace (e.g., /x30/scan) -->
+        <remap from="scan" to="scan"/>
         <param name="initial_pose_a" value="0.0"/>
         <param name="use_map_topic" value="true"/>
         <param name="base_frame_id" value="$(arg frame_prefix)base_footprint"/>
