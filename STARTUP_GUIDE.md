@@ -11,7 +11,7 @@ source devel/setup.bash
 
 ## 1) Launch Gazebo (paused, sitting)
 ```
-roslaunch toto_v2_config gazebo.launch robot_name:=x30 paused:=true world_init_z:=0.6 stand_pose:=sit
+roslaunch toto_config gazebo.launch robot_name:=x30 paused:=true world_init_z:=0.6 stand_pose:=sit
 ```
 
 Reapply sit pose **before** unpausing (prevents the jump):
@@ -35,9 +35,9 @@ rosrun controller_manager spawner joint_states_controller joint_group_position_c
 ## 2) Pose commands
 Fast pose scripts (recommended):
 ```
-rosrun toto_v2_config set_pose.py sit
-rosrun toto_v2_config set_pose.py stand
-rosrun toto_v2_config set_pose.py low
+rosrun toto_config set_pose.py sit
+rosrun toto_config set_pose.py stand
+rosrun toto_config set_pose.py low
 ```
 
 Reapply sitting pose (use when paused or after reset):
@@ -93,7 +93,7 @@ rosservice call /gazebo/unpause_physics
 
 ## 4) Navigation stack
 ```
-roslaunch toto_v2_config navigate.launch robot_name:=x30 rviz:=true
+roslaunch toto_config navigate.launch robot_name:=x30 rviz:=true
 ```
 
 RViz settings:
