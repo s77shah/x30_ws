@@ -1,0 +1,607 @@
+<?xml version="1.0" ?>
+<!--
+  tornado_damage.world — Scientifically accurate tornado aftermath scene
+  for TOTO autonomous damage surveying simulation.
+
+  Tornado parameters (EF2-3 scale):
+  - Track direction: SW to NE (225° → 45°), i.e. +x/+y diagonal
+  - Rotation: counterclockwise (CCW), Northern Hemisphere
+  - Damage path centerline runs through origin along y = x axis
+  - Width: ~80m damage swath
+
+  Tree fall pattern (scientific basis):
+  CCW rotation + NE forward motion creates a characteristic radial blowdown:
+    - SE of path centerline: winds blow SE  → trees fall SE (yaw ~ -45° to -90°)
+    - NW of path centerline: winds blow NW  → trees fall NW (yaw ~ 90° to 135°)
+    - On path centerline:    forward motion dominant → trees fall NE (yaw ~ 45°)
+    - Inflow region (south): surface winds drawn inward → some trees lean N/NE
+  The right (SE) flank sees maximum wind speed (rotation + translation additive)
+  producing the most severe damage and most consistent SE fall direction.
+
+  Robot spawns at origin — middle of the damage zone.
+-->
+<sdf version="1.6">
+  <world name="tornado_damage">
+
+    <!-- ═══════════════════════════════════════════════════
+         ENVIRONMENT
+    ═══════════════════════════════════════════════════ -->
+
+    <!-- Overcast post-tornado lighting — low sun angle, diffuse -->
+    <light name="sun" type="directional">
+      <cast_shadows>1</cast_shadows>
+      <pose>0 0 100 0 0 0</pose>
+      <diffuse>0.65 0.65 0.70 1</diffuse>
+      <specular>0.05 0.05 0.05 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <!-- Low angle from SW — storm came from that direction -->
+      <direction>0.6 0.6 -0.5</direction>
+    </light>
+
+    <!-- Ambient fill to avoid harsh shadows -->
+    <light name="ambient_fill" type="directional">
+      <cast_shadows>0</cast_shadows>
+      <pose>0 0 50 0 0 0</pose>
+      <diffuse>0.3 0.3 0.35 1</diffuse>
+      <specular>0 0 0 1</specular>
+      <direction>0 0 -1</direction>
+    </light>
+
+    <scene>
+      <ambient>0.35 0.35 0.38 1</ambient>
+      <background>0.55 0.60 0.65 1</background>
+      <sky>
+        <clouds>
+          <speed>2</speed>
+          <humidity>0.9</humidity>
+          <mean_size>0.8</mean_size>
+          <ambient>0.7 0.7 0.75 1</ambient>
+        </clouds>
+      </sky>
+      <shadows>1</shadows>
+    </scene>
+
+    <!-- Ground — muddy/churned soil after tornado -->
+    <model name="ground_plane">
+      <static>1</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>200 200</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode><mu>0.8</mu><mu2>0.6</mu2></ode>
+            </friction>
+          </surface>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>200 200</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Dirt</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ═══════════════════════════════════════════════════
+         TERRAIN MOUNDS — tornado churns up earth
+         Low irregular mounds scattered through scene
+    ═══════════════════════════════════════════════════ -->
+
+    <model name="mound_1">
+      <static>1</static>
+      <pose>3 -2 -0.3 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><sphere><radius>1.8</radius></sphere></geometry></collision>
+        <visual name="vis">
+          <geometry><sphere><radius>1.8</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="mound_2">
+      <static>1</static>
+      <pose>-4 3 -0.4 0 0 0.5</pose>
+      <link name="link">
+        <collision name="col"><geometry><sphere><radius>2.2</radius></sphere></geometry></collision>
+        <visual name="vis">
+          <geometry><sphere><radius>2.2</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="mound_3">
+      <static>1</static>
+      <pose>7 5 -0.5 0 0 1.2</pose>
+      <link name="link">
+        <collision name="col"><geometry><sphere><radius>1.5</radius></sphere></geometry></collision>
+        <visual name="vis">
+          <geometry><sphere><radius>1.5</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ═══════════════════════════════════════════════════
+         FALLEN TREES
+         Each tree: trunk = brown cylinder (r=0.2, l=6m)
+                    foliage = green sphere (r=1.5) at top of trunk
+         Pose convention: "x y z roll pitch yaw"
+           pitch=1.5707 → tree lying on its side
+           yaw = fall direction (direction the treetop points)
+
+         SCIENTIFIC FALL DIRECTIONS:
+           SE flank (x>0, y<0): yaw = -0.785 to -1.571 (SE, strongest damage)
+           NW flank (x<0, y>0): yaw = 2.356 to 2.967  (NW)
+           Path centerline (x≈y): yaw = 0.785           (NE, travel direction)
+           SW inflow zone:        yaw = 0.3 to 0.8      (toward tornado)
+    ═══════════════════════════════════════════════════ -->
+
+    <!-- ── SE FLANK — strongest damage, trees fall SE ── -->
+
+    <model name="tree_se_1">
+      <static>1</static>
+      <!-- trunk lying SE, foliage to the SE -->
+      <pose>5 -3 0.2 0 1.5707 -0.9</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.2</radius><length>6.0</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.2</radius><length>6.0</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_se_1_foliage">
+      <static>1</static>
+      <!-- foliage at top of fallen trunk (3m along trunk from center) -->
+      <pose>5.0 -5.6 0.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><sphere><radius>1.5</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Foliage</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_se_2">
+      <static>1</static>
+      <pose>8 -1 0.2 0 1.5707 -1.1</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.18</radius><length>5.5</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.18</radius><length>5.5</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_se_2_foliage">
+      <static>1</static>
+      <pose>5.3 -2.7 0.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><sphere><radius>1.4</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Foliage</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_se_3">
+      <static>1</static>
+      <pose>6 -7 0.2 0 1.5707 -0.7</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.22</radius><length>7.0</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.22</radius><length>7.0</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_se_3_foliage">
+      <static>1</static>
+      <pose>9.0 -9.0 0.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><sphere><radius>1.6</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Foliage</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_se_4">
+      <static>1</static>
+      <pose>12 -4 0.2 0 1.5707 -1.3</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.2</radius><length>6.0</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.2</radius><length>6.0</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── NW FLANK — trees fall NW ── -->
+
+    <model name="tree_nw_1">
+      <static>1</static>
+      <pose>-5 4 0.2 0 1.5707 2.4</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.2</radius><length>6.0</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.2</radius><length>6.0</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_nw_1_foliage">
+      <static>1</static>
+      <pose>-7.6 6.5 0.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><sphere><radius>1.5</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Foliage</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_nw_2">
+      <static>1</static>
+      <pose>-3 8 0.2 0 1.5707 2.7</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.19</radius><length>5.5</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.19</radius><length>5.5</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_nw_2_foliage">
+      <static>1</static>
+      <pose>-5.7 9.6 0.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><sphere><radius>1.4</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Foliage</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_nw_3">
+      <static>1</static>
+      <pose>-8 6 0.2 0 1.5707 2.2</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.21</radius><length>6.5</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.21</radius><length>6.5</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── PATH CENTERLINE — trees fall NE (tornado travel direction) ── -->
+
+    <model name="tree_path_1">
+      <static>1</static>
+      <pose>2 2 0.2 0 1.5707 0.785</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.25</radius><length>7.0</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.25</radius><length>7.0</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_path_1_foliage">
+      <static>1</static>
+      <pose>6.9 6.9 0.5 0 0 0</pose>
+      <link name="link">
+        <visual name="vis">
+          <geometry><sphere><radius>1.8</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Foliage</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_path_2">
+      <static>1</static>
+      <pose>-2 -2 0.2 0 1.5707 0.9</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.22</radius><length>6.0</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.22</radius><length>6.0</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── SW INFLOW — trees lean toward tornado (northward) ── -->
+
+    <model name="tree_inflow_1">
+      <static>1</static>
+      <pose>-6 -8 0.2 0 1.5707 0.4</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.2</radius><length>6.0</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.2</radius><length>6.0</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_inflow_2">
+      <static>1</static>
+      <pose>3 -10 0.2 0 1.5707 0.5</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.18</radius><length>5.5</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.18</radius><length>5.5</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- A few still-standing trees at the outer edge of damage zone -->
+    <model name="tree_standing_1">
+      <static>1</static>
+      <pose>15 10 0 0 0 0</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.2</radius><length>7.0</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <origin xyz="0 0 3.5" />
+          <geometry><cylinder><radius>0.2</radius><length>7.0</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="tree_standing_2">
+      <static>1</static>
+      <pose>-14 -12 0 0 0 0.3</pose>
+      <link name="trunk">
+        <collision name="col"><geometry><cylinder><radius>0.22</radius><length>7.0</length></cylinder></geometry></collision>
+        <visual name="vis">
+          <geometry><cylinder><radius>0.22</radius><length>7.0</length></cylinder></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ═══════════════════════════════════════════════════
+         DAMAGED HOUSE
+         Single-storey wood-frame structure — roof collapsed,
+         south and east walls blown out (SE flank damage).
+         Remains of NW wall and interior partition standing.
+    ═══════════════════════════════════════════════════ -->
+
+    <!-- Foundation slab -->
+    <model name="house_foundation">
+      <static>1</static>
+      <pose>-8 -3 0.05 0 0 0.3</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>8.0 6.0 0.1</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>8.0 6.0 0.1</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- North wall — still standing -->
+    <model name="house_wall_north">
+      <static>1</static>
+      <pose>-8 0.0 1.1 0 0 0.3</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>8.0 0.2 2.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>8.0 0.2 2.2</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodFloor</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- West wall — mostly standing, damaged top -->
+    <model name="house_wall_west">
+      <static>1</static>
+      <pose>-12.1 -3.0 0.9 0 0 0.3</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 6.0 1.8</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 6.0 1.8</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodFloor</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- East wall — blown out, only lower section remains -->
+    <model name="house_wall_east_stub">
+      <static>1</static>
+      <pose>-3.9 -3.0 0.4 0 0 0.3</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.2 6.0 0.8</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.2 6.0 0.8</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodFloor</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Roof section — collapsed inward, tilted -->
+    <model name="house_roof_collapsed">
+      <static>1</static>
+      <pose>-8.5 -2.5 0.9 0.4 0.15 0.3</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>7.5 5.5 0.15</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>7.5 5.5 0.15</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodFloor</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Interior debris — wall sections blown out -->
+    <model name="wall_chunk_1">
+      <static>1</static>
+      <pose>-4 -1 0.15 0.2 -0.3 -0.8</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.8 0.2 1.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>1.8 0.2 1.2</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodFloor</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="wall_chunk_2">
+      <static>1</static>
+      <pose>-2.5 -4 0.1 -0.3 0.2 -1.0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.2 0.2 0.9</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>1.2 0.2 0.9</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/WoodFloor</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ═══════════════════════════════════════════════════
+         SCATTERED DEBRIS
+         Boards, chunks — thrown SE by dominant winds
+    ═══════════════════════════════════════════════════ -->
+
+    <model name="debris_board_1">
+      <static>1</static>
+      <pose>0 -5 0.05 0 0 -0.9</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>2.0 0.15 0.05</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>2.0 0.15 0.05</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="debris_board_2">
+      <static>1</static>
+      <pose>4 -6 0.05 0 0 -1.2</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>1.5 0.12 0.05</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>1.5 0.12 0.05</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="debris_chunk_1">
+      <static>1</static>
+      <pose>2 -3 0.15 0.3 0.1 0.8</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.6 0.5 0.3</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.6 0.5 0.3</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="debris_chunk_2">
+      <static>1</static>
+      <pose>-1 4 0.1 0.1 0.2 1.5</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.8 0.4 0.25</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.8 0.4 0.25</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="debris_chunk_3">
+      <static>1</static>
+      <pose>10 -8 0.1 -0.2 0.15 -0.6</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.5 0.5 0.2</size></box></geometry></collision>
+        <visual name="vis">
+          <geometry><box><size>0.5 0.5 0.2</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Uprooted root ball — torn from ground with fallen tree -->
+    <model name="root_ball_1">
+      <static>1</static>
+      <pose>4 -2 0.4 0.3 0.2 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><sphere><radius>0.9</radius></sphere></geometry></collision>
+        <visual name="vis">
+          <geometry><sphere><radius>0.9</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="root_ball_2">
+      <static>1</static>
+      <pose>-4 4.5 0.35 0.1 -0.3 0.8</pose>
+      <link name="link">
+        <collision name="col"><geometry><sphere><radius>0.8</radius></sphere></geometry></collision>
+        <visual name="vis">
+          <geometry><sphere><radius>0.8</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ═══════════════════════════════════════════════════
+         PHYSICS
+    ═══════════════════════════════════════════════════ -->
+    <physics type="ode">
+      <real_time_update_rate>1000</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>50</iters>
+          <sor>1.3</sor>
+        </solver>
+        <constraints>
+          <cfm>0.0</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>100</contact_max_correcting_vel>
+          <contact_surface_layer>0.001</contact_surface_layer>
+        </constraints>
+      </ode>
+    </physics>
+
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+
+  </world>
+</sdf>
